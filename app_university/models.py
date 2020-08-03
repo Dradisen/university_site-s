@@ -42,7 +42,7 @@ class Faculty(models.Model):
 
     name_faculty = models.CharField(verbose_name="Название факультета", max_length=100)
     header_faculty = models.OneToOneField('Employee', verbose_name="Декан", on_delete=models.SET_NULL, blank=True, null=True)
-    belong_rectorate = models.ForeignKey(RectoratePosition, verbose_name="В подчинении у", on_delete=models.SET_NULL, null=True)
+    belong_rectorate = models.ForeignKey(RectoratePosition, related_name="faculty", verbose_name="В подчинении у", on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.name_faculty
@@ -57,7 +57,7 @@ class Cathedra(models.Model):
 
     name_cathedra = models.CharField(verbose_name="Назваине кафедры", max_length=100)
     header_cathedra = models.OneToOneField('Employee', verbose_name="Заведущий кафедрой", on_delete=models.SET_NULL, blank=True, null=True)
-    fk_faculty = models.ForeignKey(Faculty, verbose_name="Факультет", on_delete=models.CASCADE)
+    fk_faculty = models.ForeignKey(Faculty, related_name="cathedra", verbose_name="Факультет", on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name_cathedra
