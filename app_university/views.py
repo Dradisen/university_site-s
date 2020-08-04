@@ -27,5 +27,37 @@ class FacultyAPIView(generics.ListAPIView):
     serializer_class = FacultySerializer
 
 class EmployeeAPIView(generics.ListAPIView):
-    queryset = Employee.objects.all()
+    #queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+
+    def get_queryset(self):
+        if 'id' in self.kwargs:
+            ids = int(self.kwargs['id'])
+
+            if(ids):
+                return Employee.objects.all().filter(id=ids)
+        return Employee.objects.all()
+
+
+
+class StructureEmployeeAPIView(generics.ListAPIView):
+    #queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+
+    def get_queryset(self):
+        #print(self.kwargs['structure'])
+        if ('structure' in self.kwargs):
+            structure = self.kwargs['structure']
+
+            if(structure == 'rectorate'):
+                self.serializer_class = RectorateEmployeeSerializer
+                return RectoratePosition.objects.filter(header_rectorate__isnull=False)
+            elif(structure == 'faculty'):
+                self.serializer_class = FacultyEmployeeSerializer
+                return Faculty.objects.filter(header_faculty__isnull=False)
+            elif(structure == 'cathedra'):
+                self.serializer_class = CathedraEmployeeSerializer
+                return Cathedra.objects.all()
+
+            return Employee.objects.all()
+        return Employee.objects.all()

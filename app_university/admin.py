@@ -9,7 +9,6 @@ class RectoratePositionAdmin(admin.ModelAdmin):
 admin.site.register(models.Employee)
 admin.site.register(models.RectoratePosition, RectoratePositionAdmin)
 admin.site.register(models.FacultyPosition)
-admin.site.register(models.Rectorate)
 admin.site.register(models.Faculty)
 admin.site.register(models.Cathedra)
 
