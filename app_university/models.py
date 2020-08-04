@@ -20,7 +20,7 @@ class RectoratePosition(models.Model):
 
     class Meta:
         verbose_name = "Ректорат"
-        verbose_name_plural = "Дожжности"
+        verbose_name_plural = "Ректорат"
         
     position_title = models.CharField(verbose_name="Должность", max_length=70)
     belong_id = models.IntegerField(verbose_name="В подчинении у")
@@ -73,6 +73,7 @@ class Cathedra(models.Model):
 
 
     def save(self, *args, **kwords):
+        
         if not self.slug:
             self.slug = slugify(self.name_cathedra)
         super().save(*args, **kwords)
@@ -93,6 +94,7 @@ class Employee(models.Model):
     last_name = models.CharField(verbose_name="Отчество", max_length=70)
     birthday = models.DateField(verbose_name="День рождение")
     photo = models.ImageField(verbose_name="Фото", blank=True)
+    unique_position = models.BooleanField(default=False, editable=False)
 
     fk_cathedra = models.ForeignKey(Cathedra, related_name="employees", blank=True, verbose_name="Кафедра", null=True, on_delete=models.SET_NULL)
     fk_position = models.ForeignKey(FacultyPosition, verbose_name="Должность", null=True, on_delete=models.SET_NULL)

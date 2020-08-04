@@ -18,3 +18,4 @@ class RectoratePositionForm(forms.ModelForm):
             for item in r:
                 self.choices.append((item.id, item.position_title))
                 self.fields['belong_id'].choices = self.choices
+

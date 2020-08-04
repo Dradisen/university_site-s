@@ -9,7 +9,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
 class CathedraSerializer(serializers.ModelSerializer):
     header_cathedra = EmployeeSerializer(read_only=True)
-    
+    employees = EmployeeSerializer(many=True)
     class Meta:
         model = Cathedra
         fields = "__all__"

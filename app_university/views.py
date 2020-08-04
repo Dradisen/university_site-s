@@ -4,30 +4,63 @@ from app_university.serializer import *
 from app_university.models import *
 
 
-class RectorateAPIView(generics.ListAPIView):
-    #queryset = RectoratePosition.objects.all() 
-    serializer_class = RectorateSerializer
-    fields = ['id', 'position_title', 'faculty', 'belong_id']
+# class RectorateAPIView(generics.ListAPIView):
+#     #queryset = RectoratePosition.objects.all() 
+#     serializer_class = RectorateSerializer
+#     fields = ['id', 'position_title', 'leads', 'belong_id']
 
-    def get_queryset(self):
-        order_values = self.request.GET.getlist('order')
-        
-        if(len(order_values)):
-            for i, item in enumerate(order_values):
-                print(item[1:])
-                if not ((item[0] == "-" and item[1:] in self.fields) or (item in self.fields)):
-                    del order_values[i]
+#     def get_queryset(self):
+#         order_values = self.request.GET.getlist('order')
+
+#         if(len(order_values)):
+#             for i, item in enumerate(order_values):
+#                 if not ((item[0] == "-" and item[1:] in self.fields) or (item in self.fields)):
+#                     del order_values[i]
                     
-            return RectoratePosition.objects.all().order_by(*order_values)
-
-        return RectoratePosition.objects.all()
+#             return RectoratePosition.objects.all().order_by(*order_values)
+#         return RectoratePosition.objects.all()
 
 class FacultyAPIView(generics.ListAPIView):
     queryset = Faculty.objects.all() 
     serializer_class = FacultySerializer
 
+
+class StructureUniversityAPIView(generics.ListAPIView):
+    queryset = RectoratePosition.objects.all()
+    serializer_class = RectorateSerializer
+
+    def get_queryset(self):
+        order_values = self.request.GET.getlist('order')
+
+        if ('structure' in self.kwargs):
+            structure = self.kwargs['structure']
+
+            if(structure == 'rectorate'):
+                filters = ['id', 'position_title', 'leads', 'belong_id']
+                self.serializer_class = RectorateSerializer
+                model = RectoratePosition
+            elif(structure == 'faculty'):
+                filters = ['id', 'header_faculty', 'name_faculty', 'cathedra', 'slug']
+                self.serializer_class = FacultySerializer
+                model = Faculty
+            elif(structure == 'cathedra'):
+                filters = ['id', 'header_cathedra', 'name_cathedra', 'slug', 'employees']
+                self.serializer_class = CathedraSerializer
+                model = Cathedra
+    
+            if(len(order_values)):
+                for i, item in enumerate(order_values):
+                    if not ((item[0] == "-" and item[1:] in filters) or (item in filters)):
+                        del order_values[i]
+
+                return model.objects.all().order_by(*order_values)
+            return model.objects.all()
+
+        return RectoratePosition.objects.all()
+
+
+
 class EmployeeAPIView(generics.ListAPIView):
-    #queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
 
     def get_queryset(self):
@@ -45,7 +78,7 @@ class StructureEmployeeAPIView(generics.ListAPIView):
     serializer_class = EmployeeSerializer
 
     def get_queryset(self):
-        #print(self.kwargs['structure'])
+
         if ('structure' in self.kwargs):
             structure = self.kwargs['structure']
 
