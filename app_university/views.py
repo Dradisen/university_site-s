@@ -86,11 +86,11 @@ class StructureEmployeeAPIView(generics.ListAPIView):
                 self.serializer_class = RectorateEmployeeSerializer
                 return RectoratePosition.objects.filter(header_rectorate__isnull=False)
             elif(structure == 'faculty'):
-                self.serializer_class = FacultyEmployeeSerializer
-                return Faculty.objects.filter(header_faculty__isnull=False)
+                self.serializer_class = EmployeeSerializer
+                return Employee.objects.filter(fk_faculties__isnull=False)
             elif(structure == 'cathedra'):
-                self.serializer_class = CathedraEmployeeSerializer
-                return Cathedra.objects.all()
+                self.serializer_class = EmployeeSerializer
+                return Employee.objects.filter(fk_cathedra__isnull=False)
 
             return Employee.objects.all()
         return Employee.objects.all()

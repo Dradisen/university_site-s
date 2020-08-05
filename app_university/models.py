@@ -23,13 +23,8 @@ class RectoratePosition(models.Model):
         verbose_name_plural = "Ректорат"
         
     position_title = models.CharField(verbose_name="Должность", max_length=70)
+    header_rectorate = models.IntegerField(editable=False, null=True)
     belong_id = models.IntegerField(verbose_name="В подчинении у")
-    header_rectorate = models.OneToOneField('Employee', 
-        verbose_name="Возглавляет", 
-        on_delete=models.SET_NULL, 
-        blank=True, 
-        null=True
-    )
 
     def __str__(self):
         return self.position_title
@@ -43,7 +38,7 @@ class Faculty(models.Model):
         verbose_name_plural = "Факультеты"
 
     name_faculty = models.CharField(verbose_name="Название факультета", max_length=100)
-    header_faculty = models.OneToOneField('Employee', verbose_name="Декан", on_delete=models.SET_NULL, blank=True, null=True)
+    header_fuculty = models.IntegerField(editable=False, null=True)
     belong_rectorate = models.ForeignKey(RectoratePosition, related_name="leads", verbose_name="В подчинении у", on_delete=models.SET_NULL, null=True)
     slug = models.SlugField('ЧПУ', max_length=255, blank=True)
 
@@ -67,7 +62,7 @@ class Cathedra(models.Model):
         verbose_name_plural = "Кафедры"
 
     name_cathedra = models.CharField(verbose_name="Назваине кафедры", max_length=100)
-    header_cathedra = models.OneToOneField('Employee', verbose_name="Заведущий кафедрой", on_delete=models.SET_NULL, blank=True, null=True)
+    header_cathedra = models.IntegerField(editable=False, null=True)
     fk_faculty = models.ForeignKey(Faculty, related_name="cathedra", verbose_name="Факультет", on_delete=models.CASCADE)
     slug = models.SlugField('ЧПУ', max_length=255, blank=True)
 
@@ -76,6 +71,10 @@ class Cathedra(models.Model):
         
         if not self.slug:
             self.slug = slugify(self.name_cathedra)
+        
+        if self.fk_faculty:
+            Employee.objects.filter(fk_cathedra=self.id).update(fk_faculties=self.fk_faculty)
+
         super().save(*args, **kwords)
 
     def __str__(self):
@@ -94,10 +93,24 @@ class Employee(models.Model):
     last_name = models.CharField(verbose_name="Отчество", max_length=70)
     birthday = models.DateField(verbose_name="День рождение")
     photo = models.ImageField(verbose_name="Фото", blank=True)
-    unique_position = models.BooleanField(default=False, editable=False)
 
+    rectorate_position = models.OneToOneField(RectoratePosition, related_name="rectorate", null=True, blank=True, on_delete=models.SET_NULL)
+    faculty_position = models.OneToOneField(Faculty, related_name="faculty", null=True, blank=True, on_delete=models.SET_NULL)
+    cathedra_position = models.OneToOneField(Cathedra, related_name="cathedra", null=True, blank=True, on_delete=models.SET_NULL)
+
+    fk_faculties = models.ForeignKey(Faculty, null=True, blank=True, on_delete=models.SET_NULL)
     fk_cathedra = models.ForeignKey(Cathedra, related_name="employees", blank=True, verbose_name="Кафедра", null=True, on_delete=models.SET_NULL)
     fk_position = models.ForeignKey(FacultyPosition, verbose_name="Должность", null=True, on_delete=models.SET_NULL)
+
+    def save(self, *args, **kwords):
+        self.fk_faculties = Faculty.objects.get(id=self.fk_cathedra.fk_faculty.id) if self.fk_cathedra else None
+
+        # if self.rectorate_position:
+        #     RectoratePosition.objects.filter(id=self.rectorate_position.id).update(header_rectorate=self.id)
+        # else:
+        #     RectoratePosition.objects.filter(id=self.rectorate_position.id).update(header_rectorate=None)
+
+        super().save(*args, **kwords)
 
     def __str__(self):
         return "{} {} {}".format(self.surname, self.name, self.last_name)

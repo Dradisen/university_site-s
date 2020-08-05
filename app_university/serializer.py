@@ -17,13 +17,13 @@ class CathedraSerializer(serializers.ModelSerializer):
 class CathedraEmployeeSerializer(serializers.ModelSerializer):
     header_cathedra = EmployeeSerializer(read_only=True)
     employees = EmployeeSerializer(many=True)
-    
+
     class Meta:
         model = Cathedra
         fields = ['name_cathedra', 'header_cathedra', 'employees']
 
 class FacultySerializer(serializers.ModelSerializer):
-    header_faculty = EmployeeSerializer(read_only=True)
+    #header_faculty = EmployeeSerializer(read_only=True)
     cathedra = CathedraSerializer(many=True)
 
     class Meta:
@@ -38,7 +38,7 @@ class FacultyEmployeeSerializer(serializers.ModelSerializer):
         fields = ['name_faculty', 'header_faculty']
 
 class RectorateSerializer(serializers.ModelSerializer):
-    header_rectorate = EmployeeSerializer(read_only=True)
+    #header_rectorate = EmployeeSerializer(read_only=True)
     leads = FacultySerializer(many=True)
 
     class Meta:
@@ -46,7 +46,7 @@ class RectorateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class RectorateEmployeeSerializer(serializers.ModelSerializer):
-    header_rectorate = EmployeeSerializer(read_only=True)
+    header_rectorate = EmployeeSerializer()
 
     class Meta:
         model = RectoratePosition
