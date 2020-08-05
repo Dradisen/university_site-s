@@ -36,15 +36,15 @@ class StructureUniversityAPIView(generics.ListAPIView):
             structure = self.kwargs['structure']
 
             if(structure == 'rectorate'):
-                filters = ['id', 'position_title', 'leads', 'belong_id']
+                filters = ['id', 'position_title', 'leads']
                 self.serializer_class = RectorateSerializer
                 model = RectoratePosition
             elif(structure == 'faculty'):
-                filters = ['id', 'header_faculty', 'name_faculty', 'cathedra', 'slug']
+                filters = ['id', 'header_faculty', 'name_faculty']
                 self.serializer_class = FacultySerializer
                 model = Faculty
             elif(structure == 'cathedra'):
-                filters = ['id', 'header_cathedra', 'name_cathedra', 'slug', 'employees']
+                filters = ['id', 'header_cathedra', 'name_cathedra']
                 self.serializer_class = CathedraSerializer
                 model = Cathedra
     
@@ -76,21 +76,30 @@ class EmployeeAPIView(generics.ListAPIView):
 class StructureEmployeeAPIView(generics.ListAPIView):
     #queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
+    filters = ['name', 'surname', 'last_name']
 
     def get_queryset(self):
-
+        order_values = self.request.GET.getlist('order')
+        
         if ('structure' in self.kwargs):
             structure = self.kwargs['structure']
 
+            if(len(order_values)):
+                for i, item in enumerate(order_values):
+                    if (item[0] == "-" and item[1:] in self.filters):
+                        order_values[i] = "-header_"+self.kwargs['structure']+"__"+item[1:]
+                    elif (item in self.filters):
+                        order_values[i] = "header_"+self.kwargs['structure']+"__"+item
+                    else:
+                        del order_values[i]
+
             if(structure == 'rectorate'):
                 self.serializer_class = RectorateEmployeeSerializer
-                return RectoratePosition.objects.filter(header_rectorate__isnull=False)
+                return RectoratePosition.objects.filter(header_rectorate__isnull=False).order_by(*order_values)
             elif(structure == 'faculty'):
-                self.serializer_class = EmployeeSerializer
-                return Employee.objects.filter(fk_faculties__isnull=False)
+                self.serializer_class = FacultyEmployeeSerializer
+                return Faculty.objects.filter(header_faculty__isnull=False).order_by(*order_values)
             elif(structure == 'cathedra'):
-                self.serializer_class = EmployeeSerializer
-                return Employee.objects.filter(fk_cathedra__isnull=False)
-
-            return Employee.objects.all()
-        return Employee.objects.all()
+                self.serializer_class = CathedraEmployeeSerializer
+                print(order_values)
+                return Cathedra.objects.filter(header_cathedra__isnull=False).order_by(*order_values)
