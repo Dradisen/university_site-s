@@ -18,7 +18,7 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/api/v1/')),
+    path('', RedirectView.as_view(url='/api/v1/rectorate')),
     path('api/v1/', include('app_university.urls')),
     path('api-auth/', include('rest_framework.urls')),
     path('admin/', admin.site.urls),
