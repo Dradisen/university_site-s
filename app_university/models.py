@@ -23,17 +23,19 @@ class RectoratePosition(models.Model):
         verbose_name_plural = "Ректорат"
         
     position_title = models.CharField(verbose_name="Должность", max_length=70)
-    header_rectorate = models.OneToOneField('Employee', null=True, blank=True, on_delete=models.SET_NULL)
-    belong_id = models.IntegerField(verbose_name="В подчинении у")
+    header_rectorate = models.OneToOneField('Employee', related_name="rectorate", null=True, blank=True, on_delete=models.SET_NULL)
+    belong_id = models.ForeignKey('RectoratePosition', null=True, verbose_name="В подчинении у", on_delete=models.SET_NULL)
 
     def save(self, *argv, **kwargs):
-        employee = RectoratePosition.objects.get(id=self.id)
-        if self.header_rectorate:
-            if employee.header_rectorate is not None:
+
+        if not self.id is None:
+            employee = RectoratePosition.objects.get(id=self.id)
+            if self.header_rectorate:
+                if employee.header_rectorate is not None:
+                    Employee.objects.filter(id=employee.header_rectorate.id).update(rectorate_position=None)
+                Employee.objects.filter(id=self.header_rectorate.id).update(rectorate_position=self.id)
+            else:
                 Employee.objects.filter(id=employee.header_rectorate.id).update(rectorate_position=None)
-            Employee.objects.filter(id=self.header_rectorate.id).update(rectorate_position=self.id)
-        else:
-            Employee.objects.filter(id=employee.header_rectorate.id).update(rectorate_position=None)
 
         super().save(*argv, **kwargs)
 
@@ -49,7 +51,7 @@ class Faculty(models.Model):
         verbose_name_plural = "Факультеты"
 
     name_faculty = models.CharField(verbose_name="Название факультета", max_length=100)
-    header_faculty = models.OneToOneField('Employee', null=True, blank=True, on_delete=models.SET_NULL)
+    header_faculty = models.OneToOneField('Employee', related_name="faculty", null=True, blank=True, on_delete=models.SET_NULL)
     belong_rectorate = models.ForeignKey(RectoratePosition, related_name="leads", verbose_name="В подчинении у", on_delete=models.SET_NULL, null=True)
     slug = models.SlugField('ЧПУ', max_length=255, blank=True)
 
@@ -57,13 +59,14 @@ class Faculty(models.Model):
         if not self.slug:
             self.slug = slugify(self.name_faculty)
 
-        employee = Faculty.objects.get(id=self.id)
-        if self.header_faculty:
-            if employee.header_faculty is not None:
+        if not self.id is None:
+            employee = Faculty.objects.get(id=self.id)
+            if self.header_faculty:
+                if employee.header_faculty is not None:
+                    Employee.objects.filter(id=employee.header_faculty.id).update(faculty_position=None)
+                Employee.objects.filter(id=self.header_faculty.id).update(faculty_position=self.id)
+            else:
                 Employee.objects.filter(id=employee.header_faculty.id).update(faculty_position=None)
-            Employee.objects.filter(id=self.header_faculty.id).update(faculty_position=self.id)
-        else:
-            Employee.objects.filter(id=employee.header_faculty.id).update(faculty_position=None)
 
         super().save(*argv, **kwargs)
     
@@ -95,13 +98,14 @@ class Cathedra(models.Model):
         if self.fk_faculty:
             Employee.objects.filter(fk_cathedra=self.id).update(fk_faculties=self.fk_faculty)
 
-        employee = Cathedra.objects.get(id=self.id)
-        if self.header_cathedra:
-            if employee.header_cathedra is not None:
+        if not self.id is None:
+            employee = Cathedra.objects.get(id=self.id)
+            if self.header_cathedra:
+                if employee.header_cathedra is not None:
+                    Employee.objects.filter(id=employee.header_cathedra.id).update(cathedra_position=None)
+                Employee.objects.filter(id=self.header_cathedra.id).update(cathedra_position=self.id)
+            else:
                 Employee.objects.filter(id=employee.header_cathedra.id).update(cathedra_position=None)
-            Employee.objects.filter(id=self.header_cathedra.id).update(cathedra_position=self.id)
-        else:
-            Employee.objects.filter(id=employee.header_cathedra.id).update(cathedra_position=None)
 
         super().save(*args, **kwords)
 

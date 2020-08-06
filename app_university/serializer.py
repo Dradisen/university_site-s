@@ -19,7 +19,11 @@ class EmployeeFullSerializer(serializers.ModelSerializer):
         model = Employee
         fields = ["id", "surname","name","last_name", "birthday", "photo", "position"]
     
+class EmployeeFullsSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = Employee
+        fields = "__all__"
 
 
 class CathedraSerializer(serializers.ModelSerializer):

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from rest_framework import generics
 from app_university.serializer import *
 from app_university.models import *
@@ -72,6 +72,23 @@ class EmployeeAPIView(generics.ListAPIView):
         return Employee.objects.all()
 
 
+
+class EmployeeSubheadsAPIView(generics.ListAPIView):
+    serializer_class = EmployeeFullSerializer
+
+    def get_queryset(self):
+        id_employee = self.kwargs['id']
+
+        if not id_employee is None:
+            employee = get_object_or_404(Employee, id=id_employee)
+            if not employee.rectorate_position  is None:
+                employee.rectorate.id
+            elif not employee.faculty_position is None:
+                return Employee.objects.filter(fk_faculties=employee.faculty.id, cathedra_position__isnull=False)
+            elif not employee.cathedra_position is None:
+                return Employee.objects.filter(fk_cathedra=employee.cathedra.id).exclude(id=id_employee)
+
+        return Employee.objects.all()
 
 class StructureEmployeeAPIView(generics.ListAPIView):
     #queryset = Employee.objects.all()
