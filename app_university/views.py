@@ -1,32 +1,16 @@
 from django.shortcuts import render, get_object_or_404
+from django.db.models.query import QuerySet
 from rest_framework import generics
+from rest_framework.response import Response
 from app_university.serializer import *
 from app_university.models import *
 
-
-# class RectorateAPIView(generics.ListAPIView):
-#     #queryset = RectoratePosition.objects.all() 
-#     serializer_class = RectorateSerializer
-#     fields = ['id', 'position_title', 'leads', 'belong_id']
-
-#     def get_queryset(self):
-#         order_values = self.request.GET.getlist('order')
-
-#         if(len(order_values)):
-#             for i, item in enumerate(order_values):
-#                 if not ((item[0] == "-" and item[1:] in self.fields) or (item in self.fields)):
-#                     del order_values[i]
-                    
-#             return RectoratePosition.objects.all().order_by(*order_values)
-#         return RectoratePosition.objects.all()
-
 class FacultyAPIView(generics.ListAPIView):
-    queryset = Faculty.objects.all() 
+    queryset = FacultyModel.objects.all() 
     serializer_class = FacultySerializer
 
-
 class StructureUniversityAPIView(generics.ListAPIView):
-    queryset = RectoratePosition.objects.all()
+    queryset = RectorateModel.objects.all()
     serializer_class = RectorateSerializer
 
     def get_queryset(self):
@@ -38,15 +22,15 @@ class StructureUniversityAPIView(generics.ListAPIView):
             if(structure == 'rectorate'):
                 filters = ['id', 'position_title', 'leads']
                 self.serializer_class = RectorateSerializer
-                model = RectoratePosition
+                model = RectorateModel
             elif(structure == 'faculty'):
                 filters = ['id', 'header_faculty', 'name_faculty']
                 self.serializer_class = FacultySerializer
-                model = Faculty
+                model = FacultyModel
             elif(structure == 'cathedra'):
                 filters = ['id', 'header_cathedra', 'name_cathedra']
                 self.serializer_class = CathedraSerializer
-                model = Cathedra
+                model = CathedraModel
     
             if(len(order_values)):
                 for i, item in enumerate(order_values):
@@ -56,7 +40,7 @@ class StructureUniversityAPIView(generics.ListAPIView):
                 return model.objects.all().order_by(*order_values)
             return model.objects.all()
 
-        return RectoratePosition.objects.all()
+        return RectorateModel.objects.all()
 
 
 
@@ -68,8 +52,8 @@ class EmployeeAPIView(generics.ListAPIView):
             ids = int(self.kwargs['id'])
 
             if(ids):
-                return Employee.objects.all().filter(id=ids)
-        return Employee.objects.all()
+                return EmployeeModel.objects.all().filter(id=ids)
+        return EmployeeModel.objects.all()
 
 
 
@@ -80,15 +64,26 @@ class EmployeeSubheadsAPIView(generics.ListAPIView):
         id_employee = self.kwargs['id']
 
         if not id_employee is None:
-            employee = get_object_or_404(Employee, id=id_employee)
-            if not employee.rectorate_position  is None:
-                employee.rectorate.id
-            elif not employee.faculty_position is None:
-                return Employee.objects.filter(fk_faculties=employee.faculty.id, cathedra_position__isnull=False)
-            elif not employee.cathedra_position is None:
-                return Employee.objects.filter(fk_cathedra=employee.cathedra.id).exclude(id=id_employee)
+            employee = get_object_or_404(EmployeeModel, id=id_employee)
 
-        return Employee.objects.all()
+            if not employee.rectorate_position  is None:
+                rectorate_employees = RectorateModel.objects.prefetch_related().filter(belong_id=employee.rectorate.id, header_rectorate__isnull=False)
+                faculty_employees = FacultyModel.objects.prefetch_related().filter(belong_rectorate=employee.rectorate.id, header_faculty__isnull=False)
+                ids_employees = []
+                for item in rectorate_employees:
+                    ids_employees.append(item.header_rectorate.id)
+
+                for item in faculty_employees:
+                    ids_employees.append(item.header_faculty.id)
+
+                return EmployeeModel.objects.filter(id__in=ids_employees)
+
+            elif not employee.faculty_position is None:
+                return EmployeeModel.objects.filter(fk_faculties=employee.faculty.id, cathedra_position__isnull=False)
+            elif not employee.cathedra_position is None:
+                return EmployeeModel.objects.filter(fk_cathedra=employee.cathedra.id).exclude(id=id_employee)
+            else:
+                return EmployeeModel.objects.filter(id__isnull=True)
 
 class StructureEmployeeAPIView(generics.ListAPIView):
     #queryset = Employee.objects.all()
@@ -112,11 +107,10 @@ class StructureEmployeeAPIView(generics.ListAPIView):
 
             if(structure == 'rectorate'):
                 self.serializer_class = RectorateEmployeeSerializer
-                return RectoratePosition.objects.filter(header_rectorate__isnull=False).order_by(*order_values)
+                return RectorateModel.objects.filter(header_rectorate__isnull=False).order_by(*order_values)
             elif(structure == 'faculty'):
                 self.serializer_class = FacultyEmployeeSerializer
-                return Faculty.objects.filter(header_faculty__isnull=False).order_by(*order_values)
+                return FacultyModel.objects.filter(header_faculty__isnull=False).order_by(*order_values)
             elif(structure == 'cathedra'):
                 self.serializer_class = CathedraEmployeeSerializer
-                print(order_values)
-                return Cathedra.objects.filter(header_cathedra__isnull=False).order_by(*order_values)
+                return CathedraModel.objects.all().order_by(*order_values)
