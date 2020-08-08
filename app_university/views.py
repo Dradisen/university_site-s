@@ -6,14 +6,13 @@ from rest_framework.response import Response
 from app_university.serializer import *
 from app_university.models import *
 
-class FacultyAPIView(generics.ListAPIView):
-    queryset = FacultyModel.objects.all() 
-    serializer_class = FacultySerializer
+
 
 class StructureUniversityAPIView(generics.ListAPIView):
     queryset = RectorateModel.objects.all()
     serializer_class = RectorateSerializer
 
+    #Получение данных о подразделении
     def get_queryset(self):
         order_values = self.request.GET.getlist('order')
 
@@ -44,7 +43,7 @@ class StructureUniversityAPIView(generics.ListAPIView):
         return RectorateModel.objects.all()
 
 
-
+#Получение определённого сотрудника
 class EmployeeAPIView(generics.ListAPIView):
     serializer_class = EmployeeSerializer
 
@@ -53,7 +52,7 @@ class EmployeeAPIView(generics.ListAPIView):
             ids = int(self.kwargs['id'])
 
             if(ids):
-                return EmployeeModel.objects.all().filter(id=ids)
+                return EmployeeModel.objects.filter(id=ids)
         return EmployeeModel.objects.all()
 
 
@@ -61,6 +60,7 @@ class EmployeeAPIView(generics.ListAPIView):
 class EmployeeSubheadsAPIView(generics.ListAPIView):
     serializer_class = EmployeeFullSerializer
 
+    #Получение данных подчинённых конкретного сотрудника.
     def get_queryset(self):
         id_employee = self.kwargs['id']
 
@@ -86,11 +86,13 @@ class EmployeeSubheadsAPIView(generics.ListAPIView):
             else:
                 return EmployeeModel.objects.filter(id__isnull=True)
 
+
 class StructureEmployeeAPIView(generics.ListAPIView):
     #queryset = Employee.objects.all()
     serializer_class = EmployeeSerializer
     filters = ['name', 'surname', 'last_name']
-
+    
+    #Получение данных сотрудников определённого подразделения
     def get_queryset(self):
         order_values = self.request.GET.getlist('order')
         

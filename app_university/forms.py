@@ -53,5 +53,3 @@ class CathedraForm(forms.ModelForm):
                 faculty_position__isnull=True,
                 cathedra_position__isnull=True
             )
-
-
